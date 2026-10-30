@@ -127,10 +127,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    $('currentAvg').textContent=earned===null||elapsed===0?'— pt':`${fmt(earned/elapsed)} pt`;
    $('forecast').textContent=earned===null||elapsed===0?'— pt':`${fmt(earned/elapsed*totalDays)} pt`;
    const targetDaily=Number(s.dailyTarget)||0;
-   let advice='累計ポイントを入力すると、月間の進捗を自動計算します。';
-   if(earned===null) advice='コイン実績レポートの月別累計を記録してください。';
-   else if(todaysDelta!==undefined&&todaysDelta!==null) advice=todaysDelta>=targetDaily?`直近の獲得差分は日別目標を達成しています。`:`直近の獲得差分は日別目標まで ${fmt(Math.max(0,targetDaily-todaysDelta))} pt。`;
-   else advice='この月の初回記録です。次回の月別累計との差から日別獲得を計算します。';
+   const advice=makeEncouragement({earned,rate,monthlyTarget:Number(s.monthlyTarget)||0,daysLeft,elapsed,forecast:earned!==null&&elapsed>0?earned/elapsed*totalDays:null,todaysDelta,targetDaily});
    $('advice').textContent=advice;
    drawChart(m,deltas);
    renderHistory(m,deltas);
@@ -141,6 +138,55 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    const balance=getMonth(m).balances[$('entryDate').value]; $('balancePoints').value=balance??'';
    updateDeltaPreview();
  }
+
+ function makeEncouragement({earned,rate,monthlyTarget,daysLeft,elapsed,forecast,todaysDelta,targetDaily}){
+   const groups={
+     start:[
+       'さあ今月もスタート！小さな積み重ねが大きな成果につながるぞ。',
+       '最初の一歩が大事。自分のペースで着実に始めよう！',
+       '今月の目標が決まったら、あとは一日ずつ積み上げていこう。'
+     ],
+     achieved:[
+       '月間目標達成！やり遂げたな。今月の努力に大きな拍手！',
+       '目標クリアおめでとう！積み重ねがしっかり結果になったぞ。',
+       '見事達成！ここまで続けた自分を今日は思い切り褒めよう。'
+     ],
+     ahead:[
+       'いいペース！目標を先回りしているぞ。この調子でいこう！',
+       '順調そのもの！日々の積み重ねが大きな余裕を生んでいるね。',
+       '素晴らしい進捗だ。焦らず今のリズムを大切にしよう。'
+     ],
+     steady:[
+       '計画どおりに前進中！派手さより継続、いい流れだぞ。',
+       '着実に積み上がっているね。今の努力はちゃんと数字に出ている！',
+       'いい調子。無理なく続けることが目標達成への近道だ。'
+     ],
+     behind:[
+       'ここから巻き返していこう！必要なペースを確認して、一歩ずつ。',
+       'まだ時間はある。今日できる分を積み重ねれば、流れは変えられる！',
+       '数字に一喜一憂しすぎず、まずは次の一日を大切にいこう。'
+     ]
+   };
+   let group='start';
+   if(earned!==null&&monthlyTarget>0){
+     if(earned>=monthlyTarget) group='achieved';
+     else if(rate>=((elapsed+daysLeft)>0?(elapsed/(elapsed+daysLeft))*100:100)+8) group='ahead';
+     else if(rate>=((elapsed+daysLeft)>0?(elapsed/(elapsed+daysLeft))*100:100)-8) group='steady';
+     else group='behind';
+   }
+   const options=groups[group];
+   // 日付と記録状況で選択を固定し、画面更新のたびにコメントがちらつかないようにする。
+   const seed=(todayISO()+group+String(earned??0)+String(todaysDelta??'x')).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+   let message=options[seed%options.length];
+   if(todaysDelta!==null&&todaysDelta!==undefined&&targetDaily>0&&todaysDelta>=targetDaily){
+     const praise=[ '今日の日別目標も達成！いい仕事だ！', '本日分も目標クリア。コツコツの勝利だね！', '今日の目標達成、お見事！この調子！' ];
+     message+=' '+praise[seed%praise.length];
+   }else if(todaysDelta!==null&&todaysDelta!==undefined&&todaysDelta<0){
+     message+=' 数値の変動があるようだね。入力内容を確認して、落ち着いて続けよう。';
+   }
+   return message;
+ }
+
  function drawChart(m,deltas){
    const svg=$('chart'), entries=entriesSorted(m), points=entries.map(([date])=>({date,delta:deltas[date]})).filter(x=>x.delta!==null&&x.delta!==undefined);
    if(!points.length){svg.innerHTML='<text x="160" y="85" text-anchor="middle" fill="#68756b" font-size="12">記録が増えるとグラフを表示します</text>';return}
