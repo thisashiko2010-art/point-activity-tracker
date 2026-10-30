@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f7f2">
-<title>レシチャレ目標管理 v0.3</title>
+<title>レシチャレ目標管理 v0.7</title>
 <style>
 :root{--bg:#f5f7f2;--card:#fff;--ink:#1e2a22;--muted:#68756b;--green:#24794b;--line:#e1e8df;--soft:#e8f3e9;--warn:#fff4db;--red:#a63b32}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.45}
@@ -23,7 +23,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 </head>
 <body>
 <main>
-<header><h1>レシチャレ目標管理</h1><div class="sub">毎日午前3時過ぎに更新される「コイン実績レポート」の月別累計を記録</div></header>
+<header><h1>レシチャレ目標管理 v0.7</h1><div class="sub">毎日午前3時過ぎに更新される「コイン実績レポート」の月別累計を記録</div></header>
 <div class="tabs" role="tablist"><button class="active" data-tab="dashboard">ダッシュボード</button><button data-tab="input">ポイント入力</button><button data-tab="settings">目標・履歴</button></div>
 
 <section id="dashboard" class="panel">
@@ -34,7 +34,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  <div class="progress"><div id="progressFill"></div></div>
  <div id="remaining">目標まで残り — pt</div>
 </div>
-<div class="card"><div class="sub">現在の保有ポイントの円換算（100 pt = 1円）</div><div class="big" id="totalYen">— 円</div><div class="sub" id="totalPointsLabel">保有ポイント未入力</div></div>
+<div class="card"><div class="sub">現在の保有ポイント（自動計算・100 pt = 1円）</div><div class="big" id="totalYen">— 円</div><div class="sub" id="totalPointsLabel">月初残高を登録してください</div><div class="sub" id="balanceBreakdown"></div></div>
 <div class="grid">
  <div class="metric"><div class="k">直近記録日の獲得（前回との差分）</div><div class="v" id="todayEarned">— pt</div></div>
  <div class="metric"><div class="k">今日の日別目標</div><div class="v" id="dailyTargetLabel">— pt</div></div>
@@ -52,7 +52,9 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 <label for="entryDate">記録日</label><input id="entryDate" type="date">
 <label for="cumulative">対象月の月別累計コイン</label><input id="cumulative" type="number" min="0" step="1" inputmode="numeric" placeholder="例：717125">
 <div class="status" id="deltaPreview">月別累計を入力すると、前回記録との差分を表示します。</div>
-<button class="primary" id="saveEntry">月別累計を保存</button><div class="status" id="saveStatus" aria-live="polite"></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h2>現在の保有ポイント</h2><p class="sub">全体の保有ポイントを別に記録します。交換・利用で残高が減っても、月別獲得実績には影響しません。</p><label for="balancePoints">レシチャレ画面の現在ポイント</label><input id="balancePoints" type="number" min="0" step="1" inputmode="numeric" placeholder="例：1770650"><button class="secondary" id="saveBalance">保有ポイントを保存</button><div class="status" id="balanceStatus" aria-live="polite"></div></div>
+<button class="primary" id="saveEntry">月別累計を保存</button><div class="status" id="saveStatus" aria-live="polite"></div></div>
+<div class="card"><h2>月初の保有ポイント確認</h2><p class="sub">月初に実際の保有ポイントを入力します。月別累計の獲得分は自動加算され、ここで登録した値をその月の残高基準にします。</p><label for="balanceMonth">対象月</label><input id="balanceMonth" type="month"><label for="openingBalance">月初の保有全ポイント</label><input id="openingBalance" type="number" min="0" step="1" inputmode="numeric" placeholder="例：1770650"><button class="secondary" id="saveOpeningBalance">月初残高を保存</button><div class="status" id="openingBalanceStatus" aria-live="polite"></div></div>
+<div class="card"><h2>ポイント使用・交換の記録</h2><p class="sub">交換・チャージなどで使用したときだけ入力します。月別獲得実績は減らさず、保有残高だけから差し引きます。</p><label for="useDate">使用日</label><input id="useDate" type="date"><label for="usePoints">使用ポイント</label><input id="usePoints" type="number" min="1" step="1" inputmode="numeric" placeholder="例：100000"><label for="useMemo">用途（任意）</label><input id="useMemo" type="text" maxlength="80" placeholder="例：au PAYチャージ"><button class="secondary" id="saveUsage">使用ポイントを記録</button><div class="status" id="usageStatus" aria-live="polite"></div><div id="usageHistory" class="sub"></div></div>
 
 </section>
 
@@ -70,7 +72,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 <div class="status" id="backupStatus" aria-live="polite"></div></div>
 <div class="card"><h2>注意</h2><p class="sub">この試作品は端末・ブラウザ内保存です。Safariと別ブラウザの間で自動同期されません。アプリの削除やサイトデータ消去で記録が失われる可能性があります。</p></div>
 </section>
-<footer>試作 v0.4 · データは端末内保存 · 外部送信なし</footer>
+<footer>試作 v0.7 · データは端末内保存 · 外部送信なし</footer>
 </main>
 <script>
 (() => {
@@ -83,13 +85,13 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  const monthDays=m=>{const [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()};
  const fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('ja-JP'):'—';
  const yenFmt=points=>Number.isFinite(points)?(points/100).toLocaleString('ja-JP',{minimumFractionDigits:2,maximumFractionDigits:2})+' 円相当':'—';
- const blank=()=>({version:4,settings:{},months:{}});
+ const blank=()=>({version:7,settings:{},months:{}});
  let data;
  try{data=JSON.parse(localStorage.getItem(KEY))||blank()}catch{data=blank()}
  if(!data.months)data.months={}; if(!data.settings)data.settings={};
  const persist=()=>localStorage.setItem(KEY,JSON.stringify(data));
  const currentMonth=()=>monthOf($('monthSelect').value||todayISO());
- const getMonth=m=>{if(!data.months[m])data.months[m]={monthlySnapshots:{},balances:{}};if(!data.months[m].monthlySnapshots)data.months[m].monthlySnapshots={};if(!data.months[m].balances)data.months[m].balances={};return data.months[m]};
+ const getMonth=m=>{if(!data.months[m])data.months[m]={monthlySnapshots:{},balances:{}};if(!data.months[m].monthlySnapshots)data.months[m].monthlySnapshots={};if(!data.months[m].balances)data.months[m].balances={};if(!data.months[m].usages)data.months[m].usages={};return data.months[m]};
  const getSettings=m=>data.settings[m]||{monthlyTarget:20000,dailyTarget:700};
  const entriesSorted=m=>Object.entries(getMonth(m).monthlySnapshots).sort(([a],[b])=>a.localeCompare(b));
  const dayDeltas=m=>{
@@ -100,10 +102,14 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  const latestCumulative=m=>{const e=entriesSorted(m);return e.length?Number(e[e.length-1][1]):null};
  // 月別累計そのものが月間獲得実績。全体残高や交換による増減は混ぜない。
  const monthlyEarned=m=>latestCumulative(m);
- const latestBalance=()=>{
-   const all=Object.entries(data.months||{}).flatMap(([ym,r])=>Object.entries(r.balances||{}).map(([date,val])=>({date,val:Number(val)}))).sort((a,b)=>a.date.localeCompare(b.date));
-   return all.length?all[all.length-1].val:null;
+ const monthUsageTotal=m=>Object.values(getMonth(m).usages||{}).reduce((sum,x)=>sum+Number(x.points||0),0);
+ const monthBalance=m=>{
+   const rec=getMonth(m), opening=rec.openingBalance===null||rec.openingBalance===undefined?null:Number(rec.openingBalance);
+   if(opening===null||!Number.isFinite(opening))return null;
+   return opening+(monthlyEarned(m)??0)-monthUsageTotal(m);
  };
+ const latestBalance=()=>monthBalance(currentMonth());
+
  function render(){
    const m=currentMonth(), s=getSettings(m), rec=getMonth(m), today=todayISO(), day=Number((today.startsWith(m)?today.slice(8):'01'))||1, totalDays=monthDays(m);
    $('monthTitle').textContent=`${m.replace('-','年')}月の進捗`; $('todayLabel').textContent=today;
@@ -112,7 +118,8 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    const earned=monthlyEarned(m);
    const totalPoints=latestBalance();
    $('totalYen').textContent=totalPoints===null?'— 円':yenFmt(totalPoints);
-   $('totalPointsLabel').textContent=totalPoints===null?'保有ポイント未入力':`現在の保有ポイント ${fmt(totalPoints)} pt`; 
+   $('totalPointsLabel').textContent=totalPoints===null?'この月の月初残高を登録してください':`現在の保有ポイント ${fmt(totalPoints)} pt`;
+   $('balanceBreakdown').textContent=totalPoints===null?'':`月初 ${fmt(Number(rec.openingBalance))} pt ＋ 月間獲得 ${fmt(earned??0)} pt − 使用 ${fmt(monthUsageTotal(m))} pt`;
    const rate=earned!==null&&s.monthlyTarget>0?earned/s.monthlyTarget*100:null;
    $('earned').textContent=earned===null?'月別累計を入力':`${fmt(earned)} pt`;
    $('rate').textContent=rate===null?'—':`${rate.toFixed(1)}%`;
@@ -135,7 +142,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    $('monthlyTarget').value=s.monthlyTarget??20000; $('dailyTarget').value=s.dailyTarget??700;
    const eligible=eligibleEntryDate(); $('entryDate').max=eligible;
    if(!$('entryDate').value||$('entryDate').value>eligible)$('entryDate').value=eligible;
-   const balance=getMonth(m).balances[$('entryDate').value]; $('balancePoints').value=balance??'';
+   $('balanceMonth').value=m; $('openingBalance').value=rec.openingBalance??''; $('useDate').value=$('useDate').value||eligible; renderUsageHistory(m);
    updateDeltaPreview();
  }
 
@@ -213,6 +220,13 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    }).join('');
    $('monthlyHistoryWrap').innerHTML=months.length?`<table class="month-list"><thead><tr><th>月</th><th>獲得</th><th>円換算</th></tr></thead><tbody>${rows}</tbody></table>`:'月別データはまだありません。';
  }
+ function renderUsageHistory(m){
+   const items=Object.entries(getMonth(m).usages||{}).sort((a,b)=>(b[1].date||b[0]).localeCompare(a[1].date||a[0]));
+   if(!items.length){$('usageHistory').textContent='この月の使用記録はありません。';return;}
+   const rows=items.map(([id,x])=>`<tr><td>${escapeHtml(x.date||id)}</td><td>${fmt(Number(x.points))} pt</td><td>${escapeHtml(x.memo||'')}</td></tr>`).join('');
+   $('usageHistory').innerHTML=`<p>この月の使用合計：${fmt(monthUsageTotal(m))} pt</p><table class="history"><thead><tr><th>使用日</th><th>使用</th><th>用途</th></tr></thead><tbody>${rows}</tbody></table>`;
+ }
+ function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
  function updateDeltaPreview(){
    const date=$('entryDate').value, raw=$('cumulative').value, m=monthOf(date);
    if(!date||raw===''){$('deltaPreview').textContent='月別累計を入力すると、前回記録との差分を表示します。';return}
@@ -225,7 +239,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{
    document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
    document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==btn.dataset.tab);
-   if(btn.dataset.tab==='input'){const eligible=eligibleEntryDate();$('entryDate').max=eligible;$('entryDate').value=eligible;updateDeltaPreview()}
+   if(btn.dataset.tab==='input'){const eligible=eligibleEntryDate();$('entryDate').max=eligible;$('entryDate').value=eligible;$('useDate').value=$('useDate').value||eligible;updateDeltaPreview()}
    render();
  }));
  $('monthSelect').value=monthOf(todayISO());
@@ -239,10 +253,17 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    if(prev!==null&&n<prev&&!confirm(`入力値 ${fmt(n)} pt が前回の月別累計 ${fmt(prev)} pt より低くなっています。レポートの修正値として保存しますか？`))return;
    rec.monthlySnapshots[date]=n;persist();$('saveStatus').textContent=`${date}の月別累計 ${fmt(n)} pt を保存しました。`;render();
  });
- $('saveBalance').addEventListener('click',()=>{
-   const date=$('entryDate').value, raw=$('balancePoints').value;
-   if(!date||raw===''||!Number.isFinite(Number(raw))||Number(raw)<0){$('balanceStatus').textContent='日付と0以上の保有ポイントを入力してください。';return}
-   getMonth(monthOf(date)).balances[date]=Number(raw);persist();$('balanceStatus').textContent=`${date}の保有ポイント ${fmt(Number(raw))} pt を保存しました。`;render();
+ $('balanceMonth').value=monthOf(todayISO()); $('useDate').value=eligibleEntryDate();
+ $('saveOpeningBalance').addEventListener('click',()=>{
+   const m=$('balanceMonth').value, raw=$('openingBalance').value;
+   if(!m||raw===''||!Number.isFinite(Number(raw))||Number(raw)<0){$('openingBalanceStatus').textContent='対象月と0以上の月初残高を入力してください。';return;}
+   getMonth(m).openingBalance=Number(raw);persist();$('openingBalanceStatus').textContent=`${m}の月初残高 ${fmt(Number(raw))} ptを保存しました。`;render();
+ });
+ $('saveUsage').addEventListener('click',()=>{
+   const date=$('useDate').value, raw=$('usePoints').value, memo=$('useMemo').value.trim();
+   if(!date||raw===''||!Number.isFinite(Number(raw))||Number(raw)<=0){$('usageStatus').textContent='使用日と1以上の使用ポイントを入力してください。';return;}
+   const m=monthOf(date), rec=getMonth(m);if(!rec.usages)rec.usages={};
+   const id=date+'-'+Date.now();rec.usages[id]={date,points:Number(raw),memo};persist();$('usageStatus').textContent=`${fmt(Number(raw))} ptの使用を記録しました。月間獲得実績は変更していません。`;$('usePoints').value='';$('useMemo').value='';render();
  });
  $('saveSettings').addEventListener('click',()=>{
    const m=currentMonth(), mt=$('monthlyTarget').value, dt=$('dailyTarget').value;
@@ -255,7 +276,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  });
  $('importFile').addEventListener('change',async e=>{
    const f=e.target.files[0];if(!f)return;
-   try{const parsed=JSON.parse(await f.text());if(!parsed||typeof parsed.months!=='object'||typeof parsed.settings!=='object')throw Error('format');Object.values(parsed.months).forEach(r=>{if(!r.monthlySnapshots)r.monthlySnapshots={};if(!r.balances)r.balances={};});if(!confirm('現在の記録を読み込んだデータで置き換えます。続けますか？'))return;data=parsed;persist();render();$('backupStatus').textContent='バックアップを読み込みました。'}
+   try{const parsed=JSON.parse(await f.text());if(!parsed||typeof parsed.months!=='object'||typeof parsed.settings!=='object')throw Error('format');Object.values(parsed.months).forEach(r=>{if(!r.monthlySnapshots)r.monthlySnapshots={};if(!r.balances)r.balances={};if(!r.usages)r.usages={};});if(!confirm('現在の記録を読み込んだデータで置き換えます。続けますか？'))return;data=parsed;persist();render();$('backupStatus').textContent='バックアップを読み込みました。'}
    catch{$('backupStatus').textContent='読み込めませんでした。有効なバックアップJSONを選んでください。'}
    e.target.value='';
  });
