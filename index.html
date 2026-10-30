@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f7f2">
-<title>レシチャレ目標管理 v0.1</title>
+<title>レシチャレ目標管理 v0.2</title>
 <style>
 :root{--bg:#f5f7f2;--card:#fff;--ink:#1e2a22;--muted:#68756b;--green:#24794b;--line:#e1e8df;--soft:#e8f3e9;--warn:#fff4db;--red:#a63b32}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.45}
@@ -16,7 +16,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 14p
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}.hero{background:var(--green);color:#fff;border-radius:18px;padding:18px;margin:12px 0}.hero .sub{color:#dcefe1}.big{font-size:2rem;font-weight:800;letter-spacing:-.03em;margin:4px 0}.progress{height:10px;background:#ffffff4d;border-radius:99px;overflow:hidden;margin:12px 0 8px}.progress div{height:100%;background:#fff;border-radius:99px;width:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}.metric .v{font-size:1.25rem;font-weight:800;margin-top:5px;overflow-wrap:anywhere}.metric .k{font-size:.8rem;color:var(--muted)}
 .note{background:var(--warn);border-radius:12px;padding:11px;font-size:.88rem;margin-top:10px}.status{font-size:.88rem;color:var(--muted);margin-top:8px;min-height:1.2em}.tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:1;background:#e7ece5;color:var(--ink)}.tabs button.active{background:var(--green);color:#fff}.panel[hidden]{display:none}
-svg{width:100%;height:180px;display:block}.history{width:100%;border-collapse:collapse;font-size:.88rem}.history th,.history td{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}.history td:last-child,.history th:last-child{text-align:right}
+svg{width:100%;height:180px;display:block}.history{width:100%;border-collapse:collapse;font-size:.88rem}.history th,.history td{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}.history td:last-child,.history th:last-child{text-align:right}.yen{font-size:.82em;color:var(--muted);font-weight:600}.month-list{width:100%;border-collapse:collapse;font-size:.9rem}.month-list th,.month-list td{padding:10px 5px;border-bottom:1px solid var(--line);text-align:left}.month-list td:nth-child(2),.month-list th:nth-child(2),.month-list td:last-child,.month-list th:last-child{text-align:right}.month-list td:last-child{font-weight:750}
 footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 @media(min-width:560px){main{padding-left:24px;padding-right:24px}.big{font-size:2.4rem}}
 </style>
@@ -34,6 +34,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  <div class="progress"><div id="progressFill"></div></div>
  <div id="remaining">目標まで残り — pt</div>
 </div>
+<div class="card"><div class="sub">現在の総ポイントの円換算（100 pt = 1円）</div><div class="big" id="totalYen">— 円</div><div class="sub" id="totalPointsLabel">総ポイント未入力</div></div>
 <div class="grid">
  <div class="metric"><div class="k">今日の獲得（入力差分）</div><div class="v" id="todayEarned">— pt</div></div>
  <div class="metric"><div class="k">今日の日別目標</div><div class="v" id="dailyTargetLabel">— pt</div></div>
@@ -65,14 +66,15 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 <label for="monthlyTarget">月間ポイント目標</label><input id="monthlyTarget" type="number" min="0" step="1" inputmode="numeric" placeholder="例：20000">
 <label for="dailyTarget">日別ポイント目標</label><input id="dailyTarget" type="number" min="0" step="1" inputmode="numeric" placeholder="例：700">
 <button class="primary" id="saveSettings">目標を保存</button><div class="status" id="settingsStatus" aria-live="polite"></div></div>
-<div class="card"><h2>今月の記録</h2><div id="historyWrap" class="sub">記録はまだありません。</div></div>
+<div class="card"><h2>選択月の記録</h2><div id="historyWrap" class="sub">記録はまだありません。</div></div>
+<div class="card"><h2>月別の獲得ポイント一覧</h2><p class="sub">月初基準値と、その月の最新累計から月間獲得ポイントを集計します。</p><div id="monthlyHistoryWrap" class="sub">月別データはまだありません。</div></div>
 <div class="card"><h2>データのバックアップ</h2><p class="sub">記録はこのブラウザ内に保存されます。ブラウザのデータ消去などに備え、定期的にバックアップしてください。</p>
 <button class="secondary" id="exportData">バックアップを書き出す（JSON）</button>
 <label for="importFile">バックアップを読み込む</label><input id="importFile" type="file" accept="application/json,.json">
 <div class="status" id="backupStatus" aria-live="polite"></div></div>
 <div class="card"><h2>注意</h2><p class="sub">この試作品は端末・ブラウザ内保存です。Safariと別ブラウザの間で自動同期されません。アプリの削除やサイトデータ消去で記録が失われる可能性があります。</p></div>
 </section>
-<footer>試作 v0.1 · データは端末内保存 · 外部送信なし</footer>
+<footer>試作 v0.2 · データは端末内保存 · 外部送信なし</footer>
 </main>
 <script>
 (() => {
@@ -82,6 +84,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  const monthOf=s=>String(s||todayISO()).slice(0,7);
  const monthDays=m=>{const [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()};
  const fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('ja-JP'):'—';
+ const yenFmt=points=>Number.isFinite(points)?(points/100).toLocaleString('ja-JP',{minimumFractionDigits:2,maximumFractionDigits:2})+' 円相当':'—';
  const blank=()=>({version:1,settings:{},months:{}});
  let data;
  try{data=JSON.parse(localStorage.getItem(KEY))||blank()}catch{data=blank()}
@@ -110,6 +113,13 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    $('targetLabel').textContent=`${fmt(s.monthlyTarget)} pt`;
    $('dailyTargetLabel').textContent=`${fmt(s.dailyTarget)} pt`;
    const earned=monthlyEarned(m), latest=latestCumulative(m), baseline=rec.baseline;
+   const allDates=Object.entries(data.months||{}).flatMap(([ym,record])=>[
+     ...(Number.isFinite(record.baseline)?[{date:ym+'-01',val:Number(record.baseline)}]:[]),
+     ...Object.entries(record.entries||{}).map(([date,val])=>({date,val:Number(val)}))
+   ]).sort((a,b)=>a.date.localeCompare(b.date));
+   const totalPoints=allDates.length?allDates[allDates.length-1].val:null;
+   $('totalYen').textContent=totalPoints===null?'— 円':yenFmt(totalPoints);
+   $('totalPointsLabel').textContent=totalPoints===null?'総ポイント未入力':`総ポイント ${fmt(totalPoints)} pt`;
    const rate=earned!==null&&s.monthlyTarget>0?earned/s.monthlyTarget*100:null;
    $('earned').textContent=earned===null?'基準値・記録を確認':`${fmt(earned)} pt`;
    $('rate').textContent=rate===null?'—':`${rate.toFixed(1)}%`;
@@ -132,6 +142,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    $('advice').textContent=advice;
    drawChart(m,deltas);
    renderHistory(m,deltas);
+   renderMonthlyHistory();
    $('baseline').value=Number.isFinite(baseline)?baseline:'';
    $('monthlyTarget').value=s.monthlyTarget??20000; $('dailyTarget').value=s.dailyTarget??700;
    if(!$('entryDate').value)$('entryDate').value=today;
@@ -154,6 +165,14 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    if(!e.length){$('historyWrap').textContent='記録はまだありません。';return}
    let rows=e.slice().reverse().map(([date,val])=>`<tr><td>${date.slice(5).replace('-','/')}</td><td>${fmt(val)} pt</td><td>${deltas[date]===null||deltas[date]===undefined?'基準なし/要確認':`${fmt(deltas[date])} pt`}</td></tr>`).join('');
    $('historyWrap').innerHTML=`<p>月初基準値：${Number.isFinite(rec.baseline)?fmt(rec.baseline)+' pt':'未設定'}</p><table class="history"><thead><tr><th>日付</th><th>累計</th><th>当日差分</th></tr></thead><tbody>${rows}</tbody></table>`;
+ }
+ function renderMonthlyHistory(){
+   const months=Object.keys(data.months||{}).sort((a,b)=>b.localeCompare(a));
+   const rows=months.map(m=>{
+     const earned=monthlyEarned(m);
+     return `<tr><td>${m.replace('-','年')}月</td><td>${earned===null?'—':fmt(earned)+' pt'}</td><td>${earned===null?'—':yenFmt(earned)}</td></tr>`;
+   }).join('');
+   $('monthlyHistoryWrap').innerHTML=months.length?`<table class="month-list"><thead><tr><th>月</th><th>獲得</th><th>円換算</th></tr></thead><tbody>${rows}</tbody></table>`:'月別データはまだありません。';
  }
  function updateDeltaPreview(){
    const date=$('entryDate').value, raw=$('cumulative').value, m=monthOf(date), rec=getMonth(m);
