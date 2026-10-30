@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f7f2">
-<title>レシチャレ目標管理 v0.2</title>
+<title>レシチャレ目標管理 v0.3</title>
 <style>
 :root{--bg:#f5f7f2;--card:#fff;--ink:#1e2a22;--muted:#68756b;--green:#24794b;--line:#e1e8df;--soft:#e8f3e9;--warn:#fff4db;--red:#a63b32}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.45}
@@ -81,6 +81,8 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  const KEY='recichalleGoalTracker_v01';
  const $=id=>document.getElementById(id);
  const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+ // レシチャレ当日分は翌日午前3時過ぎに確定するため、入力日の初期値は直近の確認可能日とする。
+ const eligibleEntryDate=()=>{const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(new Date().getHours()>=3?1:2)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
  const monthOf=s=>String(s||todayISO()).slice(0,7);
  const monthDays=m=>{const [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()};
  const fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('ja-JP'):'—';
@@ -145,7 +147,8 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    renderMonthlyHistory();
    $('baseline').value=Number.isFinite(baseline)?baseline:'';
    $('monthlyTarget').value=s.monthlyTarget??20000; $('dailyTarget').value=s.dailyTarget??700;
-   if(!$('entryDate').value)$('entryDate').value=today;
+   const eligible=eligibleEntryDate(); $('entryDate').max=eligible;
+   if(!$('entryDate').value||$('entryDate').value>eligible)$('entryDate').value=eligible;
    updateDeltaPreview();
  }
  function drawChart(m,deltas){
@@ -186,7 +189,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
  document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{
    document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
    document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==btn.dataset.tab);
-   if(btn.dataset.tab==='input'){$('entryDate').value=$('entryDate').value||todayISO();updateDeltaPreview()}
+   if(btn.dataset.tab==='input'){const eligible=eligibleEntryDate();$('entryDate').max=eligible;$('entryDate').value=eligible;updateDeltaPreview()}
    render();
  }));
  $('monthSelect').value=monthOf(todayISO());
