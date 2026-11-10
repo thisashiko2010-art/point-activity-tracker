@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f7f2">
-<title>レシチャレ目標管理 v0.7</title>
+<title>レシチャレ目標管理 v0.8</title>
 <style>
 :root{--bg:#f5f7f2;--card:#fff;--ink:#1e2a22;--muted:#68756b;--green:#24794b;--line:#e1e8df;--soft:#e8f3e9;--warn:#fff4db;--red:#a63b32}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;line-height:1.45}
@@ -23,7 +23,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 </head>
 <body>
 <main>
-<header><h1>レシチャレ目標管理 v0.7</h1><div class="sub">毎日午前3時過ぎに更新される「コイン実績レポート」の月別累計を記録</div></header>
+<header><h1>レシチャレ目標管理 v0.8</h1><div class="sub">毎日午前3時過ぎに更新される「コイン実績レポート」の月別累計を記録</div></header>
 <div class="tabs" role="tablist"><button class="active" data-tab="dashboard">ダッシュボード</button><button data-tab="input">ポイント入力</button><button data-tab="settings">目標・履歴</button></div>
 
 <section id="dashboard" class="panel">
@@ -38,9 +38,9 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 <div class="grid">
  <div class="metric"><div class="k">直近記録日の獲得（前回との差分）</div><div class="v" id="todayEarned">— pt</div></div>
  <div class="metric"><div class="k">今日の日別目標</div><div class="v" id="dailyTargetLabel">— pt</div></div>
- <div class="metric"><div class="k">月末まで</div><div class="v" id="daysLeft">— 日</div></div>
+ <div class="metric"><div class="k">月末まで（実績日基準）</div><div class="v" id="daysLeft">— 日</div></div>
  <div class="metric"><div class="k">目標達成に必要な日平均</div><div class="v" id="neededAvg">— pt</div></div>
- <div class="metric"><div class="k">現在の日平均</div><div class="v" id="currentAvg">— pt</div></div>
+ <div class="metric"><div class="k">実績日までの日平均</div><div class="v" id="currentAvg">— pt</div></div>
  <div class="metric"><div class="k">現在ペースの月末予測</div><div class="v" id="forecast">— pt</div></div>
 </div>
 <div id="advice" class="note">コイン実績レポートの月別累計を入力してください。月間獲得は最新の月別累計を採用します。</div>
@@ -72,7 +72,7 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
 <div class="status" id="backupStatus" aria-live="polite"></div></div>
 <div class="card"><h2>注意</h2><p class="sub">この試作品は端末・ブラウザ内保存です。Safariと別ブラウザの間で自動同期されません。アプリの削除やサイトデータ消去で記録が失われる可能性があります。</p></div>
 </section>
-<footer>試作 v0.7 · データは端末内保存 · 外部送信なし</footer>
+<footer>試作 v0.8 · データは端末内保存 · 外部送信なし</footer>
 </main>
 <script>
 (() => {
@@ -127,10 +127,12 @@ footer{font-size:.78rem;color:var(--muted);padding:12px 2px}
    $('remaining').textContent=earned===null?'コイン実績レポートの月別累計を入力してください':`目標まで残り ${fmt(Math.max(0,s.monthlyTarget-earned))} pt`;
    const deltas=dayDeltas(m), latestEntry=entriesSorted(m).slice(-1)[0], todaysDelta=latestEntry?deltas[latestEntry[0]]:null;
    $('todayEarned').textContent=todaysDelta===undefined||todaysDelta===null?'初回記録':`${fmt(todaysDelta)} pt`;
-   const daysLeft=today.startsWith(m)?Math.max(0,totalDays-day):totalDays;
+   // 3時過ぎに入力する累計は前日までの実績。進捗日数は暦日ではなく最後に記録した実績日を基準にする。
+   const latestRecordedDay=latestEntry&&latestEntry[0].startsWith(m)?Number(latestEntry[0].slice(8)):0;
+   const elapsed=latestRecordedDay;
+   const daysLeft=Math.max(0,totalDays-elapsed);
    $('daysLeft').textContent=`${daysLeft} 日`;
    $('neededAvg').textContent=earned===null||daysLeft===0?'— pt':`${fmt(Math.max(0,s.monthlyTarget-earned)/daysLeft)} pt`;
-   const elapsed=today.startsWith(m)?day:0;
    $('currentAvg').textContent=earned===null||elapsed===0?'— pt':`${fmt(earned/elapsed)} pt`;
    $('forecast').textContent=earned===null||elapsed===0?'— pt':`${fmt(earned/elapsed*totalDays)} pt`;
    const targetDaily=Number(s.dailyTarget)||0;
